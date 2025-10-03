@@ -1,10 +1,6 @@
 
 # HustleHub
 
-# Video Link
-
-"https://northeastern-my.sharepoint.com/:v:/g/personal/pratapwar_s_northeastern_edu/Eb06YQxIPWpLr-ld1CZRmZoBpYlrLGoFy9SZx5jcpQpa7Q?e=6PhYcY"
-## Overview:
 
 <img src="https://github.com/info-6150-fall-2024/final-project-devmates/blob/main/hustlehub/src/images/HustleHub_HomePage.jpeg" style="border: solid black;" alt="LandingPage">
 
