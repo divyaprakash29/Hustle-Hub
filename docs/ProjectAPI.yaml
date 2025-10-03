@@ -1,0 +1,211 @@
+openapi: 3.0.0
+info:
+  title: HustleHub Project
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+paths:
+  /projects:
+    get:
+      summary: Retrieve all projects
+      description: Retrieve a list of all available projects on the platform.
+      responses:
+        "200":
+          description: A list of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+        "500":
+          description: Server error
+    post:
+      summary: Create a new project
+      description: Allows a client to post a new project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Project"
+            example:
+              title: "Web Development Project"
+              description: "Looking for a developer to build a responsive website."
+              budget: 2000.00
+              daysToComplete: 30
+              tags: ["Web Development", "HTML", "CSS", "JavaScript"]
+              category: "Web Development"
+      responses:
+        "201":
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Bad request
+        "500":
+          description: Server error
+  /projects/client/{clientId}:
+    get:
+      summary: Get projects by client ID
+      description: Retrieve all projects associated with a specific client.
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+          description: The ID of the client whose projects are being retrieved.
+      responses:
+        "200":
+          description: A list of projects associated with the client
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+        "404":
+          description: No projects found for the given client ID
+        "500":
+          description: Server error
+
+  /projects/{projectId}:
+    get:
+      summary: Get project details
+      description: Retrieve details of a specific project by ID.
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The ID of the project to retrieve
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Project not found
+        "500":
+          description: Server error
+    put:
+      summary: Update project details
+      description: Update details of a specific project by ID.
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The ID of the project to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Project"
+            example:
+              title: "Updated Project Title"
+              description: "Updated project description."
+              budget: 2500.00
+              daysToComplete: 45
+      responses:
+        "200":
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Invalid input
+        "404":
+          description: Project not found
+        "500":
+          description: Server error
+    delete:
+      summary: Delete project
+      description: Delete a specific project by ID.
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The ID of the project to delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  example: "Client no longer requires the project."
+                  description: Reason for deleting the project
+      responses:
+        "204":
+          description: Project deleted successfully
+        "404":
+          description: Project not found
+        "500":
+          description: Server error
+
+components:
+  schemas:
+    Project:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Web Development Project"
+        description:
+          type: string
+          example: "Looking for a developer to build a responsive website."
+        budget:
+          type: number
+          format: float
+          example: 2000.00
+        daysToComplete:
+          type: integer
+          example: 30
+        status:
+          type: string
+          example: "open"
+          enum: ["open", "hiring", "in-progress", "completed", "cancelled"]
+        postedAt:
+          type: string
+          format: date
+          example: "2023-11-01"
+        deadline:
+          type: string
+          format: date
+          example: "2023-12-01"
+        clientId:
+          type: string
+          example: "client123"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["Web Development", "HTML", "CSS", "JavaScript"]
+        category:
+          type: string
+          example: "Web Development"
+        currentBidCount:
+          type: integer
+          example: 5
+        minimumBid:
+          type: number
+          format: float
+          example: 1500.00
+        averageBid:
+          type: number
+          format: float
+          example: 1800.00

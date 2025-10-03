@@ -1,0 +1,226 @@
+openapi: 3.0.0
+info:
+  title: HustleHub Bid
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+  version: 1.0.0
+paths:
+  /projects/{projectId}/bids:
+    get:
+      summary: Retrieve all bids for a specific project
+      description: Retrieve all bids submitted for a specific project by freelancers.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "proj_12345"
+          description: The unique identifier of the project.
+      responses:
+        "200":
+          description: A list of bids for the specified project.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bid"
+              example:
+                - bidId: "bid_56789"
+                  freelancerId: "freel_001"
+                  projectId: "proj_12345"
+                  bidAmount: 500.0
+                  deliveryTime: 15
+                  status: "pending"
+        "404":
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Project not found"
+                message: "The specified project ID does not exist."
+    post:
+      summary: Submit a new bid for a project
+      description: Allows a freelancer to submit a new bid on a specific project.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "proj_12345"
+          description: The unique identifier of the project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewBid"
+            example:
+              freelancerId: "freel_001"
+              bidAmount: 500.0
+              deliveryTime: 15
+      responses:
+        "201":
+          description: Bid created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bid"
+              example:
+                bidId: "bid_56789"
+                freelancerId: "freel_001"
+                projectId: "proj_12345"
+                bidAmount: 500.0
+                deliveryTime: 15
+                status: "pending"
+        "400":
+          description: Invalid request data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Invalid data"
+                message: "Bid amount must be greater than zero."
+
+  /bids/{bidId}/status:
+    put:
+      summary: Update bid status
+      description: Update the status of a specific bid (e.g., accepted, rejected).
+      parameters:
+        - name: bidId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "bid_56789"
+          description: The unique identifier of the bid.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [accepted, rejected]
+              required:
+                - status
+            example:
+              status: "accepted"
+      responses:
+        "200":
+          description: Bid status updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bid"
+              example:
+                bidId: "bid_56789"
+                freelancerId: "freel_001"
+                projectId: "proj_12345"
+                bidAmount: 500.0
+                deliveryTime: 15
+                status: "accepted"
+        "404":
+          description: Bid not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Bid not found"
+                message: "The specified bid ID does not exist."
+
+  /bids/{bidId}:
+    delete:
+      summary: Delete a bid
+      description: Delete a specific bid by its ID.
+      parameters:
+        - name: bidId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "bid_56789"
+          description: The unique identifier of the bid.
+      responses:
+        '204':
+          description: Bid deleted successfully.
+        '404':
+          description: Bid not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bid not found"
+                message: "The specified bid ID does not exist."
+
+components:
+  schemas:
+    Bid:
+      type: object
+      properties:
+        bidId:
+          type: string
+          description: Unique identifier for the bid.
+          example: "bid_56789"
+        freelancerId:
+          type: string
+          description: Unique identifier of the freelancer.
+          example: "freel_001"
+        projectId:
+          type: string
+          description: Unique identifier of the project.
+          example: "proj_12345"
+        bidAmount:
+          type: number
+          format: float
+          description: The amount bid by the freelancer.
+          example: 500.0
+        deliveryTime:
+          type: integer
+          description: Estimated delivery time in days.
+          example: 15
+        status:
+          type: string
+          description: The current status of the bid.
+          enum: [pending, accepted, rejected]
+          example: "pending"
+    NewBid:
+      type: object
+      properties:
+        freelancerId:
+          type: string
+          description: Unique identifier of the freelancer.
+          example: "freel_001"
+        bidAmount:
+          type: number
+          format: float
+          description: The amount bid by the freelancer.
+          example: 500.0
+        deliveryTime:
+          type: integer
+          description: Estimated delivery time in days.
+          example: 15
+      required:
+        - freelancerId
+        - bidAmount
+        - deliveryTime
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: The error type.
+          example: "Bid not found"
+        message:
+          type: string
+          description: Detailed error message.
+          example: "The specified bid ID does not exist."
+

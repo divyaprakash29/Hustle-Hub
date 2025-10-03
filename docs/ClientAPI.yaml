@@ -1,0 +1,269 @@
+#indicates version 3.0.0 of openapi
+openapi: 3.0.0
+#swagger metadata is contained in the info object and info has 3 properties version, title and description
+info:
+  title: HustleHubWebD
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+#paths to specify API resources, & within resources the operations like post,get etc are specified
+paths:
+  /clients/{clientId}/profile:  # Endpoint to create a new client profile
+    post:
+      summary: Create a new client profile
+      description: Allows a new client profile to be created.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProfile'
+            example:
+              clientId: c1234
+              about: We are a small web design agency looking for talented freelancers.
+              location: San Francisco, CA
+              company: Web Design Co.
+              preferredCategories:
+                - Web Development
+                - Graphic Design
+              averageProjectBudget: 2500.0
+      responses:
+        '201':
+          description: Client profile created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProfile'
+              example:
+                {
+                  "clientId": "c1234",
+                  "about": "We are a small web design agency looking for talented freelancers.",
+                  "location": "San Francisco, CA",
+                  "company": "Web Design Co.",
+                  "projectsPosted": 0,
+                  "projectsCompleted": 0,
+                  "averageRating": 0.0,
+                  "paymentVerified": false,
+                  "preferredCategories": [
+                    "Web Development",
+                    "Graphic Design"
+                  ],
+                  "averageProjectBudget": 2500.0
+                }
+        '400':
+          description: Bad Request - Invalid input provided
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict - Profile with this information already exists
+        '500':
+          description: Internal Server Error
+
+   # Endpoint to get all client profiles
+  /clients:
+    get:  
+      summary: Get all client profiles
+      description: Retrieve a list of all client profiles
+      responses:
+        '200':
+          description: List of all client profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientProfile'
+              example:
+                [
+                  {
+                    "profileId": "p001",
+                    "clientId": "c1234",
+                    "about": "We are a small web design agency looking for talented freelancers.",
+                    "location": "San Francisco, CA",
+                    "company": "Web Design Co.",
+                    "projectsPosted": 5,
+                    "projectsCompleted": 3,
+                    "averageRating": 4.2,
+                    "paymentVerified": true,
+                    "preferredCategories": [
+                      "Web Development",
+                      "Graphic Design"
+                    ],
+                    "averageProjectBudget": 2500.0
+                  },
+                  {
+                    "profileId": "p002",
+                    "clientId": "c5678",
+                    "about": "Tech startup seeking creative developers",
+                    "location": "New York, NY",
+                    "company": "TechStart Inc",
+                    "projectsPosted": 8,
+                    "projectsCompleted": 6,
+                    "averageRating": 4.8,
+                    "paymentVerified": true,
+                    "preferredCategories": [
+                      "Mobile Development",
+                      "UI/UX Design"
+                    ],
+                    "averageProjectBudget": 3500.0
+                  }
+                ]
+        '500':
+          description: "Internal Server Error"
+
+  # Endpoint to get client profile by profile ID
+  /clients/{clientId}//profile/{profileId}:
+    get:
+      summary: Get client profile by profile ID
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the client
+      responses:
+        '200':
+          description: Client profile details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProfile'
+              example:
+                {
+                  "profileId": "p001",
+                  "clientId": "c1234",
+                  "about": "We are a small web design agency looking for talented freelancers.",
+                  "location": "San Francisco, CA",
+                  "company": "Web Design Co.",
+                  "projectsPosted": 5,
+                  "projectsCompleted": 3,
+                  "averageRating": 4.2,
+                  "paymentVerified": true,
+                  "preferredCategories": [
+                    "Web Development",
+                    "Graphic Design"
+                  ],
+                  "averageProjectBudget": 2500.0
+                }
+        '404':
+          description: Not Found - Freelancer profile does not exist
+        '500':
+          description: Internal Server Error
+        
+  # Endpoint to update client profile  
+  /clients/{clientId}/profile/{profileId}:           
+    put:
+      summary: Update client profile
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProfile'
+            example:
+              about: We have expanded our team and are looking for more freelancers.
+              location: San Francisco, CA
+              company: Web Design Co.
+              preferredCategories:
+                - Web Development
+                - Graphic Design
+                - Video Editing
+              averageProjectBudget: 3000.0
+      responses:
+        '200':
+          description: Client profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProfile'
+              example:
+                {
+                  "profileId": "p001",
+                  "clientId": "c1234",
+                  "about": "We have expanded our team and are looking for more freelancers.",
+                  "location": "San Francisco, CA",
+                  "company": "Web Design Co.",
+                  "projectsPosted": 5,
+                  "projectsCompleted": 3,
+                  "averageRating": 4.2,
+                  "paymentVerified": true,
+                  "preferredCategories": [
+                    "Web Development",
+                    "Graphic Design",
+                    "Video Editing"
+                  ],
+                  "averageProjectBudget": 3000.0
+                } 
+        '400':
+          description: Bad Request - Invalid input provided
+        '404':
+          description: Not Found - Client profile does not exist
+        '500':
+          description: Internal Server Error 
+
+    # Endpoint to delete a client profile   
+    delete:
+      summary: Delete a client profile
+      description: Permanently removes a client profile from the system
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the client whose profile is to be deleted
+      responses:
+        '204':
+          description: Client profile successfully deleted
+        '400':
+          description: Bad Request - Invalid client ID format
+        '401':
+          description: Unauthorized - Authentication required
+        '404':
+          description: Not Found - Client profile does not exist
+        '500':
+          description: Internal Server Error    
+
+components:
+  schemas:
+     ClientProfile:
+      type: object
+      properties:
+        clientId:
+          type: string
+          description: The unique identifier of the client
+        about:
+          type: string
+          description: Brief description about the client
+        location:
+          type: string
+          description: Location of the client
+        company:
+          type: string
+          description: Company name of the client
+        projectsPosted:
+          type: integer
+          description: The number of projects the client has posted
+        projectsCompleted:
+          type: integer
+          description: The number of projects the client has completed
+        averageRating:
+          type: number
+          format: float
+          description: The average rating the client has received from freelancers
+        paymentVerified:
+          type: boolean
+          description: Whether the client's payment method has been verified
+        preferredCategories:
+          type: array
+          items:
+            type: string
+          description: Categories the client prefers (e.g., Web Development)

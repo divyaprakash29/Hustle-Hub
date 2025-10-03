@@ -1,0 +1,142 @@
+openapi: 3.0.0
+info:
+  title: ReportManagement
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+servers:
+  - url: "https://localhost:5000"
+    description: Local development environment
+
+tags:
+  - name: Reports
+    description: About fetching report by admin
+
+paths:
+  /reports:
+    get:
+      summary: Retrieve various system reports
+      description: Allows an admin to retrieve different types of reports, such as user activity, project statuses, and payment summaries.
+      operationId: getSystemReports
+      tags:
+        - Reports
+      security:
+        - bearerAuth: [] # Requires admin authentication
+      parameters:
+        - name: reportType
+          in: query
+          required: true
+          description: The type of report to retrieve (e.g., "userActivity", "projectStatus", "paymentSummary", "systemUsage").
+          schema:
+            type: string
+            enum: [userActivity, projectStatus, paymentSummary, systemUsage]
+        - name: startDate
+          in: query
+          required: false
+          description: Start date for the report period.
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          description: End date for the report period.
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          required: false
+          description: Status filter for reports that support status categorization.
+          schema:
+            type: string
+            enum: [active, completed, pending, canceled]
+      responses:
+        "200":
+          description: Successfully retrieved the report data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportResponse"
+        "400":
+          description: Bad Request - Invalid parameters provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportErrorResponse"
+        "401":
+          description: Unauthorized - Admin privileges required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ReportResponse:
+      type: object
+      properties:
+        reportType:
+          type: string
+          description: The requested report type
+          example: "userActivity"
+        generatedAt:
+          type: string
+          format: date-time
+          description: The time the report was generated
+          example: "2023-01-31T15:30:00Z"
+        data:
+          type: array
+          description: Array of data entries specific to the report type
+          items:
+            $ref: "#/components/schemas/ReportData"
+        summary:
+          $ref: "#/components/schemas/ReportSummary"
+
+    ReportData:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for each entry
+          example: "12345"
+        name:
+          type: string
+          description: Name related to the entry
+          example: "Ross Geller"
+        activity:
+          type: string
+          description: Description of the activity (specific to "userActivity" report type)
+          example: "Logged in from mobile"
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time of the activity
+          example: "2023-01-02T08:00:00Z"
+
+    ReportSummary:
+      type: object
+      description: Summary metrics for the report
+      properties:
+        totalEntries:
+          type: integer
+          description: Total number of entries in the report
+          example: 150
+        activeUsers:
+          type: integer
+          description: Count of active users (specific to user-related reports)
+          example: 120
+
+    ReportErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message detailing what was invalid
+          example: "Invalid reportType specified."

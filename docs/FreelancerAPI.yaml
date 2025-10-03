@@ -1,0 +1,538 @@
+openapi: 3.0.0
+info:
+  title: FreelancerManagement
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+servers:
+  - url: "https://localhost:5000"
+    description: Local development environment
+
+tags:
+  - name: freelancer
+    description: About freelancer profile creation, update, and retrieval
+
+paths:
+  /user/{userId}/profile:
+    post:
+      operationId: create-freelancer-profile
+      description: API for freelancers to create or update their profiles, including details about their skills, pricing, portfolio, and reviews.
+      tags:
+        - freelancer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The unique identifier of the freelancer."
+          example: "abc123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FreelancerProfileRequestCreate"
+      responses:
+        "201":
+          description: Freelancer profile successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FreelancerProfileResponse"
+        "400":
+          description: Bad Request - Invalid input provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "409":
+          description: Conflict - Profile with this information already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+
+    get:
+      operationId: get-freelancer-profile
+      description: API for retrieving all profiles of freelancer.
+      tags:
+        - freelancer
+      # security:
+      #   - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: "The unique identifier of the freelancer."
+          example: "abc123"
+      responses:
+        "200":
+          description: Freelancer profile successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FreelancerProfileResponse"
+        "404":
+          description: Not Found - Freelancer profile does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+
+  /user/{userId}/profile/{profileId}:
+    put:
+      operationId: update-freelancer-profile-by-profileid
+      description: API for freelancers to update their profile information, such as description, skills, pricing, portfolio, and reviews.
+      tags:
+        - freelancer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: "The unique identifier of the freelancer."
+          example: "abc123"
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: "The unique identifier of the freelancer's profile."
+          example: "profile12345"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FreelancerProfileRequest"
+      responses:
+        "200":
+          description: Freelancer profile successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FreelancerProfileResponse"
+        "400":
+          description: Bad Request - Invalid input provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "404":
+          description: Not Found - Freelancer profile does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+
+    get:
+      operationId: get-freelancer-profile-by-profileid
+      description: API for retrieving a freelancer's profile information.
+      tags:
+        - freelancer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: "The unique identifier of the freelancer."
+          example: "abc123"
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: "The unique identifier of the freelancer's profile."
+          example: "profile12345"
+      responses:
+        "200":
+          description: Freelancer profile successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FreelancerProfileResponse"
+        "404":
+          description: Not Found - Freelancer profile does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+    delete:
+      operationId: delete-freelancer-profile-by-profileid
+      description: API to delete a freelancer's profile by its unique identifier.
+      tags:
+        - freelancer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The unique identifier of the freelancer."
+          example: "abc123"
+        - name: profileId
+          in: path
+          required: true
+
+          schema:
+            type: string
+          description: "The unique identifier of the freelancer's profile."
+          example: "profile12345"
+      responses:
+        "204":
+          description: Freelancer Profile deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message
+                    example: "Profile deleted successfully."
+        "400":
+          description: Bad Request - Invalid input provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "404":
+          description: Not Found - Freelancer profile does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileError"
+
+  /freelancers:
+    get:
+      operationId: list-freelancers
+      description: "API to view a list of all freelancer profiles"
+      tags:
+        - freelancer
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Successfully retrieved the list of freelancer profiles"
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/FreelancerProfileResponse"
+              examples:
+                example1:
+                  summary: "List of freelancers"
+                  value:
+                    - userId: "abc123"
+                      description: "Experienced web developer specializing in front-end and back-end technologies."
+                      skills: ["HTML", "CSS", "JavaScript", "Node.js"]
+                      categories: ["Web Development", "Software Engineering"]
+                      pricing: 50.0
+                      noOfDaysToComplete: 14
+                      previousCompanies: ["Tech Corp", "Web Solutions Inc."]
+                      portfolio: "http://portfolio.example.com"
+                      rating: 4.8
+                      reviews:
+                        - reviewId: "r1"
+                          rating: 5
+                          comments: "Excellent developer! Delivered the project on time."
+                          postedAt: "2023-11-01T10:00:00Z"
+                          clientId: "client123"
+                      createdAt: "2023-01-01T12:00:00Z"
+                    - userId: "abc124"
+                      description: "Expert graphic designer with a focus on branding and digital art."
+                      skills: ["Photoshop", "Illustrator", "Sketch", "InDesign"]
+                      categories: ["Graphic Design", "Branding"]
+                      pricing: 40.0
+                      noOfDaysToComplete: 7
+                      previousCompanies: ["Design Studio", "Creative Agency"]
+                      portfolio: "http://portfolio2.example.com"
+                      rating: 4.5
+                      reviews:
+                        - reviewId: "r3"
+                          rating: 5
+                          comments: "Amazing designs! Very creative and professional."
+                          postedAt: "2023-10-20T12:00:00Z"
+                          clientId: "client789"
+                      createdAt: "2023-02-01T11:00:00Z"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/FreelancersListError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    FreelancerProfileRequestCreate:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "The unique identifier for the freelancer."
+        description:
+          type: string
+          description: "A brief description about the freelancer's expertise."
+          example: "Experienced web developer specializing in full-stack development."
+        skills:
+          type: array
+          items:
+            type: string
+          description: "A list of skills the freelancer is proficient in."
+          example: ["HTML", "CSS", "JavaScript", "Node.js", "React"]
+        categories:
+          type: array
+          items:
+            type: string
+          description: "Categories of projects the freelancer is interested in."
+          example: ["Web Development", "Mobile App Development"]
+        pricing:
+          type: number
+          format: float
+          description: "The hourly rate or project pricing for the freelancer's services."
+          example: 50.00
+        noOfDaysToComplete:
+          type: integer
+          description: "Estimated number of days to complete a typical project."
+          example: 7
+        previousCompanies:
+          type: array
+          items:
+            type: string
+          description: "List of previous companies the freelancer has worked with."
+          example: ["TechCorp", "WebDev Studios"]
+        portfolio:
+          type: string
+          description: "A link to the freelancer's portfolio or work samples."
+          example: "https://www.freelancerportfolio.com/johndoe"
+      required:
+        - userId
+        - description
+        - skills
+        - categories
+        - pricing
+        - noOfDaysToComplete
+        - previousCompanies
+        - portfolio
+
+    FreelancerProfileRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "The unique identifier for the freelancer."
+        description:
+          type: string
+          description: "A brief description about the freelancer's expertise."
+          example: "Experienced web developer specializing in full-stack development."
+        skills:
+          type: array
+          items:
+            type: string
+          description: "A list of skills the freelancer is proficient in."
+          example: ["HTML", "CSS", "JavaScript", "Node.js", "React"]
+        categories:
+          type: array
+          items:
+            type: string
+          description: "Categories of projects the freelancer is interested in."
+          example: ["Web Development", "Mobile App Development"]
+        pricing:
+          type: number
+          format: float
+          description: "The hourly rate or project pricing for the freelancer's services."
+          example: 50.00
+        noOfDaysToComplete:
+          type: integer
+          description: "Estimated number of days to complete a typical project."
+          example: 7
+        previousCompanies:
+          type: array
+          items:
+            type: string
+          description: "List of previous companies the freelancer has worked with."
+          example: ["TechCorp", "WebDev Studios"]
+        portfolio:
+          type: string
+          description: "A link to the freelancer's portfolio or work samples."
+          example: "https://www.freelancerportfolio.com/johndoe"
+        rating:
+          type: number
+          format: float
+          description: "The average rating based on the freelancer's previous reviews."
+          example: 4.5
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              clientId:
+                type: string
+                description: "The unique identifier of the client who gave the review."
+                example: "client123"
+              rating:
+                type: integer
+                description: "The rating given by the client."
+                example: 5
+              comment:
+                type: string
+                description: "The comment or feedback provided by the client."
+                example: "Great job on the project! Will definitely hire again."
+              postedAt:
+                type: string
+                format: date-time
+                description: "The date and time the review was posted."
+                example: "2023-10-01T14:30:00Z"
+      required:
+        - userId
+        - description
+        - skills
+        - categories
+        - pricing
+        - noOfDaysToComplete
+        - previousCompanies
+        - portfolio
+
+    FreelancerProfileResponse:
+      type: object
+      properties:
+        profileId:
+          type: string
+          description: "The unique identifier for the freelancer's profile."
+          example: "prof123"
+        userId:
+          type: string
+          description: "The unique identifier for the freelancer."
+        description:
+          type: string
+          description: "The freelancer's profile description."
+        skills:
+          type: array
+          items:
+            type: string
+          description: "The list of skills the freelancer has."
+        categories:
+          type: array
+          items:
+            type: string
+          description: "The categories the freelancer specializes in."
+        pricing:
+          type: number
+          format: float
+          description: "The hourly rate or project pricing for the freelancer."
+        noOfDaysToComplete:
+          type: integer
+          description: "The average number of days the freelancer takes to complete a project."
+        previousCompanies:
+          type: array
+          items:
+            type: string
+          description: "The list of companies the freelancer has worked with."
+        portfolio:
+          type: string
+          description: "A URL to the freelancer's portfolio or work samples."
+        rating:
+          type: number
+          format: float
+          description: "The average rating based on the freelancer's reviews."
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              clientId:
+                type: string
+                description: "The unique identifier of the client who gave the review."
+              rating:
+                type: integer
+                description: "The rating given by the client."
+              comment:
+                type: string
+                description: "The comment or feedback provided by the client."
+              postedAt:
+                type: string
+                format: date-time
+                description: "The date and time the review was posted."
+        createdAt:
+          type: string
+          format: date-time
+          description: "The date and time when the profile was created."
+          example: "2023-11-01T12:00:00Z"
+
+    ProfileError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "The error code."
+        message:
+          type: string
+          description: "The error message."
+          example: "Invalid input provided or profile already exists."
+
+    FreelancersListError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "The error code."
+        message:
+          type: string
+          description: "The error message."
+          example: "An unexpected error occurred while retrieving freelancer profiles."

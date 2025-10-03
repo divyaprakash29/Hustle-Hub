@@ -1,0 +1,416 @@
+openapi: 3.0.0
+info:
+  title: UserManagement
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+servers:
+  - url: "https://localhost:5000"
+    description: Local development environment
+
+tags:
+  - name: user
+    description: About user signup, login, logout and retriving list of users
+
+paths:
+  /user/signup:
+    post:
+      operationId: user-signup
+      description: API for user signup, allowing new users to create an account
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullname:
+                  type: string
+                  description: "Full name of the user"
+                  example: "Ross Geller"
+                email:
+                  type: string
+                  description: "User's email address"
+                  format: email
+                  example: "rossgeller@gmail.com"
+                password:
+                  type: string
+                  description: "User's password"
+                  format: password
+                  example: "password@123"
+                role:
+                  type: string
+                  description: "User's role in the application (e.g., Client, Freelancer, Admin)"
+                  enum: [client, freelancer, admin]
+                  example: "client"
+              required:
+                - fullname
+                - email
+                - password
+                - role
+      responses:
+        "201":
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        "400":
+          description: Bad Request - Invalid input provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignUpError"
+        "409":
+          description: Conflict - Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignUpError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignUpError"
+
+  /user/login:
+    post:
+      operationId: user-login
+      description: API for logging in a user
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: "The email address of the user"
+                  format: email
+                  example: "rossgeller@gmail.com"
+                password:
+                  type: string
+                  description: "User's password"
+                  format: password
+                  example: "password@123"
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Successfully logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Bad Request - Invalid credentials provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+        "401":
+          description: Unauthorized - Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+
+  /user/logout:
+    post:
+      operationId: user-logout
+      description: API endpoint for user logout, invalidating the current session token.
+      tags:
+        - user
+      security:
+        - bearerAuth: [] # Ensures the request is authenticated with a token
+      responses:
+        "200":
+          description: User successfully logged out.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "Confirmation message for successful logout."
+                    example: "Logout successful. Token has been invalidated."
+        "401":
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthError"
+
+  /users:
+    get:
+      operationId: list-users
+      description: "Allows an admin or authorized user to view a list of all registered users in the system."
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved list of all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+              examples:
+                example1:
+                  summary: Example of a client user
+                  value:
+                    - userId: "abc123"
+                      fullname: "Ross Geller"
+                      email: "rossgeller@gmail.com"
+                      role: "client"
+                      createdAt: "2023-01-01T12:00:00Z"
+                      lastLogin: "2023-01-05T10:30:00Z"
+                example2:
+                  summary: Example of a freelancer user
+                  value:
+                    - userId: "def456"
+                      fullname: "Monica Geller"
+                      email: "monicageller@gmail.com"
+                      role: "freelancer"
+                      createdAt: "2023-02-10T14:00:00Z"
+                      lastLogin: "2023-03-01T16:45:00Z"
+        "401":
+          description: Unauthorized - Bearer token missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListError"
+        "403":
+          description: Forbidden - User does not have the necessary permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListError"
+
+  /user/{userId}:
+    delete:
+      operationId: delete-user
+      description: "API to delete a user by their unique ID. Only the user who created the account is authorized to delete it."
+      tags:
+        - user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: "The unique identifier of the user to delete."
+          schema:
+            type: string
+            example: "abc123"
+      security:
+        - bearerAuth: [] # Requires JWT token for authentication
+      responses:
+        "200":
+          description: "User successfully deleted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User deleted successfully."
+        "401":
+          description: "Unauthorized - The user is not authenticated."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthError"
+        "403":
+          description: "Forbidden - The user is not authorized to delete this account."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListError"
+        "404":
+          description: "Not Found - The user with the provided ID does not exist."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "User not found."
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error. Please try again later."
+
+components:
+  schemas:
+    SignupResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "Unique identifier for the created user"
+          example: "abc123"
+        fullname:
+          type: string
+          example: "Ross Geller"
+        email:
+          type: string
+          example: "rossgeller@gmail.com"
+        role:
+          type: string
+          example: "client"
+        createdAt:
+          type: string
+          format: date-time
+          description: "The date and time when the user account was created"
+          example: "2023-01-01T12:00:00Z"
+
+    SignUpError:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "400"
+        message:
+          type: string
+          example: "Invalid email format or missing required fields."
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: "JWT access token for authorization"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        expiresIn:
+          type: integer
+          description: "Token expiration time in seconds."
+          example: 3600
+        user:
+          type: object
+          description: "Basic user information"
+          properties:
+            userId:
+              type: string
+              example: "c123"
+            name:
+              type: string
+              example: "Ross Geller"
+            email:
+              type: string
+              example: "rossgeller@gmail.com"
+            role:
+              type: string
+              example: "client"
+            lastLogin:
+              type: string
+              format: date-time
+              description: "The date and time of the user's last login"
+              example: "2023-01-01T10:00:00Z"
+
+    LoginError:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "401"
+        message:
+          type: string
+          example: "Invalid email or password."
+
+    AuthError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "Error message indicating why the request failed."
+          example: "Invalid token or session expired."
+
+    UserResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "Unique identifier for the user"
+          example: "abc123"
+        fullname:
+          type: string
+          description: "Full name of the user"
+          example: "Ross Geller"
+        email:
+          type: string
+          description: "Email of the user"
+          example: "rossgeller@gmail.com"
+        role:
+          type: string
+          description: "User's role in the application"
+          example: "client"
+        createdAt:
+          type: string
+          format: date-time
+          description: "Account creation date and time"
+          example: "2023-01-01T12:00:00Z"
+        lastLogin:
+          type: string
+          format: date-time
+          description: "Last login date and time"
+          example: "2023-01-05T10:30:00Z"
+
+    UserListError:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: "Error code representing the specific error"
+          example: 401
+        message:
+          type: string
+          description: "Error message detailing the issue"
+          example: "Unauthorized access. Please provide a valid token."
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

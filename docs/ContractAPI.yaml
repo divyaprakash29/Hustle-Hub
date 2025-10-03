@@ -1,0 +1,277 @@
+openapi: 3.0.0
+info:
+
+  title: HustleHub Contract
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+  version: 1.0.0
+paths:
+  /contracts:
+    post:
+      summary: Create a new contract
+      description: Create a contract between a client and a freelancer for a specific project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewContract"
+            example:
+              projectId: "proj_12345"
+              clientId: "client_001"
+              freelancerId: "freel_002"
+              terms: "Complete the project within the specified deadline."
+              status: "pending"
+              startDate: "2023-01-15"
+              endDate: "2023-02-15"
+      responses:
+        "201":
+          description: Contract created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+              example:
+                contractId: "contract_67890"
+                projectId: "proj_12345"
+                clientId: "client_001"
+                freelancerId: "freel_002"
+                terms: "Complete the project within the specified deadline."
+                status: "pending"
+                startDate: "2023-01-15"
+                endDate: "2023-02-15"
+        "400":
+          description: Invalid request data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Invalid data"
+                message: "Terms cannot be empty."
+
+    get:
+      summary: Retrieve all contracts
+      description: Get a list of all contracts within the platform.
+      responses:
+        "200":
+          description: A list of contracts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contract"
+              example:
+                - contractId: "contract_67890"
+                  projectId: "proj_12345"
+                  clientId: "client_001"
+                  freelancerId: "freel_002"
+                  terms: "Complete the project within the specified deadline."
+                  status: "pending"
+                  startDate: "2023-01-15"
+                  endDate: "2023-02-15"
+
+  /contracts/{contractId}:
+    get:
+      summary: Retrieve specific contract details
+      description: Retrieve detailed information about a specific contract by its ID.
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "contract_67890"
+          description: The unique identifier of the contract.
+      responses:
+        "200":
+          description: Contract details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+              example:
+                contractId: "contract_67890"
+                projectId: "proj_12345"
+                clientId: "client_001"
+                freelancerId: "freel_002"
+                terms: "Complete the project within the specified deadline."
+                status: "pending"
+                startDate: "2023-01-15"
+                endDate: "2023-02-15"
+        "404":
+          description: Contract not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Contract not found"
+                message: "The specified contract ID does not exist."
+
+    put:
+      summary: Update contract status
+      description: Update the status of a specific contract (e.g., completed, canceled).
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "contract_67890"
+            description: The unique identifier of the contract.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [completed, canceled]
+              required:
+                - status
+            example:
+              status: "completed"
+      responses:
+        "200":
+          description: Contract status updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+              example:
+                contractId: "contract_67890"
+                projectId: "proj_12345"
+                clientId: "client_001"
+                freelancerId: "freel_002"
+                terms: "Complete the project within the specified deadline."
+                status: "completed"
+                startDate: "2023-01-15"
+                endDate: "2023-02-15"
+        "404":
+          description: Contract not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Contract not found"
+                message: "The specified contract ID does not exist."
+
+    delete:
+      summary: Delete a contract
+      description: Delete a specific contract by its ID.
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "contract_67890"
+          description: The unique identifier of the contract.
+      responses:
+        '204':
+          description: Contract deleted successfully.
+        '404':
+          description: Contract not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Contract not found"
+                message: "The specified contract ID does not exist."
+
+components:
+  schemas:
+    Contract:
+      type: object
+      properties:
+        contractId:
+          type: string
+          description: Unique identifier for the contract.
+          example: "contract_67890"
+        projectId:
+          type: string
+          description: Unique identifier of the associated project.
+          example: "proj_12345"
+        clientId:
+          type: string
+          description: Unique identifier of the client.
+          example: "client_001"
+        freelancerId:
+          type: string
+          description: Unique identifier of the freelancer.
+          example: "freel_002"
+        terms:
+          type: string
+          description: The terms of the contract.
+          example: "Complete the project within the specified deadline."
+        status:
+          type: string
+          description: The current status of the contract.
+          enum: [pending, completed, canceled]
+          example: "pending"
+        startDate:
+          type: string
+          format: date
+          description: The start date of the contract.
+          example: "2023-01-15"
+        endDate:
+          type: string
+          format: date
+          description: The end date or deadline of the contract.
+          example: "2023-02-15"
+    NewContract:
+      type: object
+      properties:
+        projectId:
+          type: string
+          description: Unique identifier of the project.
+          example: "proj_12345"
+        clientId:
+          type: string
+          description: Unique identifier of the client.
+          example: "client_001"
+        freelancerId:
+          type: string
+          description: Unique identifier of the freelancer.
+          example: "freel_002"
+        terms:
+          type: string
+          description: The terms of the contract.
+          example: "Complete the project within the specified deadline."
+        status:
+          type: string
+          description: The current status of the contract.
+          example: "pending"
+        startDate:
+          type: string
+          format: date
+          description: The start date of the contract.
+          example: "2023-01-15"
+        endDate:
+          type: string
+          format: date
+          description: The end date or deadline of the contract.
+          example: "2023-02-15"
+      required:
+        - projectId
+        - clientId
+        - freelancerId
+        - terms
+        - status
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: The error type.
+          example: "Contract not found"
+        message:
+          type: string
+          description: Detailed error message.
+          example: "The specified contract ID does not exist."

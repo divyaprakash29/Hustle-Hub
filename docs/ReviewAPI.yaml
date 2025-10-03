@@ -1,0 +1,213 @@
+openapi: 3.0.0
+info:
+  title: HustleHubProject
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+paths:
+  /reviews: # Endpoint to manage reviews
+    post:  # Create a new review
+      summary: Create a new review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+            # Reference to Review schema
+              $ref: '#/components/schemas/Review'
+            # Example of a new review being created
+            example:
+                [
+              {
+                "rating": 4,
+                "comments": "Great work on the project!",
+                "freelancerId": "f1234",
+                "clientId": "c5678"
+              },
+            ]
+      # Possible responses for the POST request    
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+            description: Bad Request - Invalid review data
+        '401':
+            description: Unauthorized - Authentication required
+        '500':
+          description: "Internal Server Error"    
+    get: # Retrieve all reviews
+      summary: Get all reviews
+      # Possible responses for the POST request    
+      responses:
+        '200':
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                # Reference to Review schema
+                  $ref: '#/components/schemas/Review'
+               # Example of the list of reviews returned
+              example:
+                [
+                  {
+                    "reviewId": "r001",
+                    "rating": 4,
+                    "comments": "Great work on the project!",
+                    "postedAt": "2023-05-05T14:22:11Z",
+                    "freelancerId": "f1234",
+                    "clientId": "c5678"
+                  },
+                  {
+                    "reviewId": "r002",
+                    "rating": 5,
+                    "comments": "Excellent service, would hire again.",
+                    "postedAt": "2023-04-20T11:37:42Z",
+                    "freelancerId": "f5678",
+                    "clientId": "c1234"
+                  },
+                  {
+                    "reviewId": "r003",
+                    "rating": 3,
+                    "comments": "Could have been better, but got the job done.",
+                    "postedAt": "2023-03-15T09:18:29Z",
+                    "freelancerId": "f2468",
+                    "clientId": "c8642"
+                  }
+                ]
+        '400':
+          description: Bad Request - Invalid query parameters
+        '401':
+          description: Unauthorized - Authentication required
+        '404':
+          description: Review not found
+        '500':
+          description: "Internal Server Error"      
+ 
+  /reviews/{reviewId}: # Endpoint to manage a specific review by ID
+    get: # Retrieve a review by its ID
+      summary: Get review by ID
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the review
+      # Possible responses for the GET request by ID   
+      responses:
+        '200':
+          description: Review details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+              # Example of a review returned by ID
+              example:
+                {
+                  "reviewId": "r002",
+                  "rating": 5,
+                  "comments": "Excellent service, would hire again.",
+                  "postedAt": "2023-04-20T11:37:42Z",
+                  "freelancerId": "f5678",
+                  "clientId": "c1234"
+                }
+        '400':
+          description: Bad Request - Invalid review ID format
+        '401':
+          description: Unauthorized - Authentication required
+        '500':
+          description: "Internal Server Error"        
+    put: # Update a review by its ID
+      summary: Update a review
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+            example:
+              rating: 5
+              comments: The freelancer did an excellent job.
+       # Possible responses for the PUT request  
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+              # Example of the updated review returned
+              example:
+                {
+                  "reviewId": "r002",
+                  "rating": 5,
+                  "comments": "The freelancer did an excellent job.",
+                  "postedAt": "2023-04-20T11:37:42Z",
+                  "freelancerId": "f5678",
+                  "clientId": "c1234"
+                }
+        '400':
+          description: Bad Request - Invalid review update data
+        '401':
+          description: Unauthorized - Authentication required
+        '500':
+          description: "Internal Server Error"          
+    delete: # Delete a review by its ID
+      summary: Delete a review by ID
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the review
+       # Possible responses for the DELETE request     
+      responses:
+        '204':
+          description: Review deleted successfully
+        '400':
+          description: Bad Request - Invalid review ID format
+        '401':
+          description: Unauthorized - Authentication required
+        '404':
+          description: Not Found - Review does not exist
+        '500':
+          description: Internal Server Error  
+
+# Components section to define reusable schemas   
+components:
+  schemas: # Schema definition for a review
+    Review:
+      type: object
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The rating given by the client (1-5)
+        comments:
+          type: string
+          description: The comments provided by the client
+        postedAt:
+          type: string
+          format: date-time
+          description: The date and time the review was posted
+        freelancerId:
+          type: string
+          description: The unique identifier of the freelancer being reviewed
+        clientId:
+          type: string
+          description: The unique identifier of the client providing the review has context menu      

@@ -1,0 +1,191 @@
+#indicates version 3.0.0 of openapi
+openapi: 3.0.0
+#swagger metadata is contained in the info object and info has 3 properties version, title and description
+info:
+  title: HustleHub
+  version: 1.0.0
+  description: HustleHub application is a digital platform where clients can post their projects, detailing required skills, timelines, and budgets. Freelancers then browse these listings and communicate with client  to showcase their qualifications for consideration , then freelancers are selected by clients to work on their project. Following project completion, clients  will review and provide feedback to the freelancer.By offering tools for handling contracts and payments, the platform facilitates collaboration.
+
+#paths to specify API resources, & within resources the operations like post,get etc are specified
+paths:
+  /payments:
+    post: # Endpoint to create a new payment
+      summary: Create a new payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              # Reference to the Payment schema
+              $ref: '#/components/schemas/Payment'
+               # Example of a payment request
+              example:               
+                  {
+                    "amount": 500.99,
+                    "status": "pending",
+                  }  
+      # Possible responses for the POST request                       
+      responses:
+        '201':
+          description: Payment created successfully
+          content:
+            application/json:
+              schema:
+                # Reference to the Payment schema
+                $ref: '#/components/schemas/Payment'
+        '400':
+            description: Bad Request - Invalid payment details provided
+        '401':
+            description: Unauthorized - Authentication required
+        '409':
+           description: Conflict - Payment already exists
+        '500':
+          description: "Internal Server Error"     
+        
+    get: # Endpoint to get a list of all payments
+      summary: Get a list of all payments
+      responses:
+       # Possible responses for the GET request  
+        '200':
+          description: List of all payments
+          content:
+            application/json:
+              schema:
+                # Indicates that the response is an array
+                type: array
+                items:
+                  # Reference to the Payment schema
+                  $ref: '#/components/schemas/Payment'
+                  # Example of the response
+              example:
+                [
+                  {
+                    "paymentId": "p001",
+                    "amount": 500.99,
+                    "status": "pending",
+                    "paidAt": "2023-04-15T12:34:56Z"
+                  },
+                  {
+                    "paymentId": "p002",
+                    "amount": 750.00,
+                    "status": "completed",
+                    "paidAt": "2023-03-28T09:45:12Z"
+                  },
+                  {
+                    "paymentId": "p003",
+                    "amount": 300.50,
+                    "status": "pending",
+                    "paidAt": "2023-05-01T16:28:03Z"
+                  }
+                ]
+        '400':
+          description: Bad Request - Invalid query parameters
+        '401':
+           description: Unauthorized - Authentication required
+        '500':
+            description: "Internal Server Error"      
+
+  # Endpoint to get payment by ID
+  /payments/_id:
+    get:
+      summary: Get payment by ID
+      parameters:
+      # Parameter for the payment ID
+        - name: _id
+          in: path
+          required: true
+          schema:
+          # Type of the parameter
+            type: string
+          description: The unique identifier of the payment
+       # Possible responses for the GET request      
+      responses:
+        '200':
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                # Reference to the Payment schema
+                $ref: '#/components/schemas/Payment'
+                 # Example of the response
+              example:
+                {
+                  "paymentId": "p002",
+                  "amount": 750.00,
+                  "status": "completed",
+                  "paidAt": "2023-03-28T09:45:12Z"
+                }
+        '400':
+          description: Bad Request - Invalid payment ID format
+        '401':
+          description: Unauthorized - Authentication required
+        '404':
+          description: Not Found - Payment not found
+        '500':
+          description: "Internal Server Error"         
+    put:  # Endpoint to update payment status
+      summary: Update payment status
+      parameters:
+      # Parameter for the payment ID
+        - name: _id
+          in: path
+          required: true
+          schema:
+           # Type of the parameter
+            type: string
+          description: The unique identifier of the payment
+      requestBody:
+       # Indicates that the request body is required
+        required: true
+        content:
+          application/json:
+            schema:
+              # Reference to the Payment schema
+              $ref: '#/components/schemas/Payment'
+               # Example of a payment update request
+            example:
+              status: completed
+       # Possible responses for the PUT request          
+      responses:
+        '200':
+          description: Payment status updated
+          content:
+            application/json:
+              schema:
+                # Reference to the Payment schema
+                $ref: '#/components/schemas/Payment'
+                 # Example of the response
+              example:
+                {
+                  "paymentId": "p001",
+                  "amount": 500.99,
+                  "status": "completed",
+                  "paidAt": "2023-04-15T12:34:56Z"
+                }
+        '400':
+            description: Bad Request - Invalid payment update data
+        '401':
+          description: Unauthorized - Authentication required
+        '500':
+          description: "Internal Server Error"         
+
+# Components section to define reusable schemas               
+components:
+  schemas:
+    Payment:  # Schema for Payment object
+      type: object
+      properties:
+        amount:
+          type: number   # Type of the amount property
+          format: float  # Format of the amount
+          description: The amount of the payment
+        status:
+          type: string # Type of the status property
+          enum: [pending, completed] # Possible values for the status
+          description: The status of the payment
+        
+
+   
+       
+        
+        
